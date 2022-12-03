@@ -6,6 +6,39 @@ function readInput() {
 
 function part1() {
   return readInput()
+    .map(line => ({
+      'A X': 4,
+      'A Y': 8,
+      'A Z': 3,
+      'B X': 1,
+      'B Y': 5,
+      'B Z': 9,
+      'C X': 7,
+      'C Y': 2,
+      'C Z': 6,
+    }[line] ?? 0))
+    .reduce((sum, value) => sum + value)
+}
+
+function part2() {
+  return readInput()
+    .map(line => ({
+      'A X': 3,
+      'A Y': 4,
+      'A Z': 8,
+      'B X': 1,
+      'B Y': 5,
+      'B Z': 9,
+      'C X': 2,
+      'C Y': 6,
+      'C Z': 7,
+    }[line] ?? 0))
+    .reduce((sum, value) => sum + value, 0)
+}
+
+/* Old, verbose solution
+function part1() {
+  return readInput()
     .map(line => {
       if (!line.length) return 0
       const [first, second] = line.split(' ')
@@ -80,7 +113,7 @@ function part2() {
       }
     })
     .reduce((sum, value) => sum + value, 0)
-}
+}*/
 
 console.log(`part1: ${part1()}`)
 console.log(`part2: ${part2()}`)
