@@ -1,4 +1,5 @@
-import { readFileSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'node:fs'
+import bmpjs from 'bmp-js'
 
 /**
  * @return {number[][]}
@@ -10,12 +11,13 @@ function readInput() {
     .map(line => line.split('').map(Number))
 }
 
-/**
- *
- * @param {number[][]} treeMap
- * @return {number}
- */
-function countTreesFromEdges(treeMap) {
+const data = readInput()
+const HEIGHT = data.length
+const WIDTH = data[0].length
+const visibleData = calculateTreesVisibleFromEdges()
+const scenicScoreData = calculateScenicScores()
+
+function calculateTreesVisibleFromEdges() {
   /*
      - We have a problem: We must count the visible trees.
      - A tree is a cell in a matrix represented by an arbitrarily large rectangular array of digits (0-9)
@@ -24,130 +26,176 @@ function countTreesFromEdges(treeMap) {
        - A tree may be blocked from view from one side, but visible from any other side
    */
 
-  const HEIGHT = treeMap.length
-  const WIDTH = treeMap[0].length
-
   // Track which trees are visible. We will set a tree to true if it is visible from any edge.
   // This is not perfect, we will check every tree four times, but it's easy.
-  const visibleMap = Array.from({length: HEIGHT}, () => Array.from({length: WIDTH}, () => false))
+  const visibleTrees = new Array(WIDTH * HEIGHT)
 
-  // First we check each row, left-to-right:
+  // First we check each row
   for (let row = 0; row < HEIGHT; row++) {
+    // Left-to-right:
     let tallest = -1
     for (let col = 0; col < WIDTH; col++) {
-      if (treeMap[row][col] > tallest) {
+      if (data[row][col] > tallest) {
         // This tree is taller than the tallest tree so far, it's visible!
-        visibleMap[row][col] = true
+        visibleTrees[row * WIDTH + col] = true
         // Update tallest to this height
-        tallest = treeMap[row][col]
+        tallest = data[row][col]
       }
       if (tallest === 9) break // Tallest possible tree, no other tree can be taller. Abort.
     }
-  }
 
-  // Right-to-left:
-  for (let row = 0; row < HEIGHT; row++) {
-    let tallest = -1
+    // Right-to-left:
+    tallest = -1
     for (let col = HEIGHT - 1; col >= 0; col--) {
-      if (treeMap[row][col] > tallest) {
+      if (data[row][col] > tallest) {
         // This tree is taller than the tallest tree so far, it's visible!
-        visibleMap[row][col] = true
+        visibleTrees[row * WIDTH + col] = true
         // Update tallest to this height
-        tallest = treeMap[row][col]
+        tallest = data[row][col]
       }
       if (tallest === 9) break // Tallest possible tree, no other tree can be taller. Abort.
     }
   }
 
-  // Then we check each column, top-to-bottom:
+  // Then we check each column
   for (let col = 0; col < WIDTH; col++) {
+    // Top-to-bottom:
     let tallest = -1
     for (let row = 0; row < HEIGHT; row++) {
-      if (treeMap[row][col] > tallest) {
+      if (data[row][col] > tallest) {
         // This tree is taller than the tallest tree so far, it's visible!
-        visibleMap[row][col] = true
+        visibleTrees[row * WIDTH + col] = true
         // Update tallest to this height
-        tallest = treeMap[row][col]
+        tallest = data[row][col]
       }
       if (tallest === 9) break // Tallest possible tree, no other tree can be taller. Abort.
     }
-  }
 
-  // Bottom-to-top:
-  for (let col = 0; col < WIDTH; col++) {
-    let tallest = -1
+    // Bottom-to-top
+    tallest = -1
     for (let row = HEIGHT - 1; row >= 0; row--) {
-      if (treeMap[row][col] > tallest) {
+      if (data[row][col] > tallest) {
         // This tree is taller than the tallest tree so far, it's visible!
-        visibleMap[row][col] = true
+        visibleTrees[row * WIDTH + col] = true
         // Update tallest to this height
-        tallest = treeMap[row][col]
+        tallest = data[row][col]
       }
       if (tallest === 9) break // Tallest possible tree, no other tree can be taller. Abort.
     }
   }
 
-  //Finally we count the number of visible trees:
-  return visibleMap.reduce((sum, row) => sum + row.reduce((sum, height) => sum + height, 0), 0)
+  return visibleTrees
 }
 
-/**
- *
- * @param {number[][]} treeMap
- * @param {number} row
- * @param {number} col
- */
-function getScenicScoreForPoint(treeMap, row, col) {
-  const HEIGHT = treeMap.length
-  const WIDTH = treeMap[0].length
-  const currentHeight = treeMap[row][col]
+function calculateScenicScores() {
+  const scenicScores = new Array(WIDTH * HEIGHT)
 
-  let visibleLeft = 0
-  let visibleRight = 0
-  let visibleUp = 0
-  let visibleDown = 0
+  for (let row = 0; row < HEIGHT; row++) {
+    for (let col = 0; col < WIDTH; col++) {
+      const currentHeight = data[row][col]
 
-  for (let i = col + 1; i < WIDTH; i++) {
-    visibleRight++
-    if (treeMap[row][i] >= currentHeight) {
-      break
+      let visibleLeft = 0
+      let visibleRight = 0
+      let visibleUp = 0
+      let visibleDown = 0
+
+      for (let i = col + 1; i < WIDTH; i++) {
+        visibleRight++
+        if (data[row][i] >= currentHeight) break
+      }
+
+      for (let i = col - 1; i >= 0; i--) {
+        visibleLeft++
+        if (data[row][i] >= currentHeight) break
+      }
+
+      for (let i = row + 1; i < HEIGHT; i++) {
+        visibleDown++
+        if (data[i][col] >= currentHeight) break
+      }
+
+      for (let i = row - 1; i >= 0; i--) {
+        visibleUp++
+        if (data[i][col] >= currentHeight) break
+      }
+
+      scenicScores[row * WIDTH + col] = visibleLeft * visibleRight * visibleUp * visibleDown
     }
   }
-
-  for (let i = col - 1; i >= 0; i--) {
-    visibleLeft++
-    if (treeMap[row][i] >= currentHeight) {
-      break
-    }
-  }
-
-  for (let i = row + 1; i < HEIGHT; i++) {
-    visibleDown++
-    if (treeMap[i][col] >= currentHeight) {
-      break
-    }
-  }
-
-  for (let i = row - 1; i >= 0; i--) {
-    visibleUp++
-    if (treeMap[i][col] >= currentHeight) {
-      break
-    }
-  }
-
-  return visibleLeft * visibleRight * visibleUp * visibleDown
+  return scenicScores
 }
 
 function part1() {
-  return countTreesFromEdges(readInput())
+  //Finally we count the number of visible trees:
+  return visibleData.reduce((sum, visible) => sum + visible, 0)
 }
 
 function part2() {
-  return readInput().reduce((maxScenicValue, trees, row, treeMap) =>
-      Math.max(maxScenicValue, trees.reduce((maxScenicValueForRow, tree, col) =>
-        Math.max(maxScenicValueForRow, getScenicScoreForPoint(treeMap, row, col)), 0)),
-    0)
+  return Math.max(...scenicScoreData)
 }
 
-console.log(`part1: ${part1()}`)
+console.log(`part1: ${part1(data)}`)
 console.log(`part2: ${part2()}`)
+
+renderImages()
+
+function renderImages() {
+  renderHeightToBMP()
+  renderVisibleToBMP()
+  renderScenicScoreToBMP()
+}
+
+function renderVisibleToBMP() {
+  const buffer = new ArrayBuffer(WIDTH * HEIGHT * 4)
+  const imageData = new Uint8Array(buffer)
+  visibleData.forEach((visible, index) => {
+    imageData[index * 4] = 255
+    imageData[index * 4 + 1] = visible * 255
+    imageData[index * 4 + 2] = visible * 255
+    imageData[index * 4 + 3] = visible * 255
+  })
+  const image = bmpjs.encode({
+    data: imageData,
+    width: WIDTH,
+    height: HEIGHT,
+  })
+  writeFileSync('./day08_visible.bmp', image.data)
+}
+
+function renderScenicScoreToBMP() {
+  const maxScenicScore = part2()
+  const buffer = new ArrayBuffer(WIDTH * HEIGHT * 4)
+  const imageData = new Uint8Array(buffer)
+  scenicScoreData.forEach((score, index) => {
+    const logScore = Math.log10(score / maxScenicScore * 10)
+    imageData[index * 4] = 255
+    imageData[index * 4 + 1] = logScore * 255 // Blue
+    imageData[index * 4 + 2] = logScore * 255 // Green
+    imageData[index * 4 + 3] = logScore * 255 // Red
+  })
+
+  const image = bmpjs.encode({
+    data: imageData,
+    width: WIDTH,
+    height: HEIGHT,
+  })
+  writeFileSync('./day08_scenic.bmp', image.data)
+}
+
+function renderHeightToBMP() {
+  const buffer = new ArrayBuffer(WIDTH * HEIGHT * 4)
+  const imageData = new Uint8Array(buffer)
+  data.forEach((row, y) => row.forEach((height, x) => {
+    const pos = y * WIDTH * 4 + x * 4
+    imageData[pos] = 255
+    imageData[pos + 1] = 0 // Blue
+    imageData[pos + 2] = height / 9 * 255 // Green
+    imageData[pos + 3] = 0 // Red
+  }))
+  const image = bmpjs.encode({
+    data: imageData,
+    width: WIDTH,
+    height: HEIGHT,
+  })
+  writeFileSync('./day08_height.bmp', image.data)
+}
