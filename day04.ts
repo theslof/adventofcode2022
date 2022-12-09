@@ -1,40 +1,19 @@
-import { readFileSync } from 'node:fs'
+import {readData, Tuple} from './utils'
 
-function readInput() {
-  return readFileSync('./day04.data', {encoding: 'utf8'}).split('\n').filter(r => r)
-}
-
-/**
- * @typedef {[number, number]} Tuple
- * @param {string} line
- * @return {[Tuple, Tuple]}
- */
-function lineToTuples(line) {
+function lineToTuples(line: string): Tuple<number, number>[] {
   return line.split(',')
     .map(range => range.split('-'))
     .map(([start, end]) => [Number(start), Number(end)])
 }
 
-/**
- *
- * @param {Tuple} first
- * @param {Tuple} second
- * @return {boolean}
- */
-function fullIntersect(first, second) {
+function fullIntersect(first: Tuple<number, number>, second: Tuple<number, number>): boolean {
   return (
     (first[0] <= second[0] && first[1] >= second[1]) || // First wraps second
     (first[0] >= second[0] && first[1] <= second[1]) // Second wraps first
   )
 }
 
-/**
- *
- * @param {Tuple} first
- * @param {Tuple} second
- * @return {boolean}
- */
-function partialIntersect(first, second) {
+function partialIntersect(first: Tuple<number, number>, second: Tuple<number, number>): boolean {
   return (
     (first[0] <= second[0] && first[1] >= second[0]) || // First intersects start of second
     (first[0] <= second[1] && first[1] >= second[1]) || // First intersects end of second
@@ -42,15 +21,17 @@ function partialIntersect(first, second) {
   )
 }
 
-function part1() {
-  return readInput()
+function part1(): number {
+  return readData(4)
+    .filter(l => l)
     .map(lineToTuples)
     .filter(([first, second]) => fullIntersect(first, second))
     .length
 }
 
-function part2() {
-  return readInput()
+function part2(): number {
+  return readData(4)
+    .filter(l => l)
     .map(lineToTuples)
     .filter(([first, second]) => partialIntersect(first, second))
     .length

@@ -1,11 +1,7 @@
-import { readFileSync } from 'node:fs'
+import {readData} from './utils'
 
-function readInput() {
-  return readFileSync('./day02.data', {encoding: 'utf8'}).split('\n')
-}
-
-function part1() {
-  return readInput()
+function part1(): number {
+  return readData(2)
     .map(line => ({
       'A X': 4,
       'A Y': 8,
@@ -20,8 +16,8 @@ function part1() {
     .reduce((sum, value) => sum + value)
 }
 
-function part2() {
-  return readInput()
+function part2(): number {
+  return readData(2)
     .map(line => ({
       'A X': 3,
       'A Y': 4,

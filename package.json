@@ -2,10 +2,12 @@
   "name": "adventofcode2022",
   "version": "1.0.0",
   "description": "Advent of Code 2022",
-  "type": "module",
   "author": "Jonas Theslöf <theslof@gmail.com>",
   "license": "MIT",
   "devDependencies": {
-    "bmp-js": "^0.1.0"
+    "@types/bmp-js": "^0.1.0",
+    "@types/node": "^18.11.12",
+    "bmp-js": "^0.1.0",
+    "ts-node": "^10.9.1"
   }
 }

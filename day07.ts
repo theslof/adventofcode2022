@@ -1,17 +1,8 @@
-import { readFileSync } from 'node:fs'
+import {readData} from './utils'
 
-function readInput() {
-  return readFileSync('./day07.data', {encoding: 'utf8'}).split('\n')
-}
-
-/**
- *
- * @param {string[]} lines
- * @return { number[] }
- */
-function parseFileSystem(lines) {
-  const fs = {'/': 0}
-  let path = []
+function parseFileSystem(lines: string[]): number[] {
+  const fs: Record<string, number> = {'/': 0}
+  let path: string[] = []
 
   lines.forEach(line => {
     if (line.length === 0) return
@@ -45,19 +36,19 @@ function parseFileSystem(lines) {
   return Object.keys(fs).map(path => fs[path])
 }
 
-function part1() {
-  return parseFileSystem(readInput())
+function part1(): number {
+  return parseFileSystem(readData(7))
     .filter(size => size <= 100000)
     .reduce((sum, size) => sum + size, 0)
 }
 
-function part2() {
-  const sizes = parseFileSystem(readInput()).sort((a, b) => b - a)
+function part2(): number {
+  const sizes = parseFileSystem(readData(7)).sort((a, b) => b - a)
   const fullFileSize = sizes[0]
   const spaceNeeded = fullFileSize - 40000000
   return sizes
     .filter((size) => size >= spaceNeeded)
-    .pop()
+    .pop() as number
 }
 
 console.log(`part1: ${part1()}`)

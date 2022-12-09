@@ -1,14 +1,10 @@
-import {readFileSync} from 'node:fs'
+import {readData} from './utils'
 
-function readInput() {
-  return readFileSync('./day01.data', {encoding: 'utf8'}).split('\n')
-}
-
-function part1() {
+function part1(): number {
   let mostCalories = 0
 
   let currentElf = 0
-  readInput().map(line => {
+  readData(1).map(line => {
     if (!line.length) {
       mostCalories = Math.max(mostCalories, currentElf)
       currentElf = 0
@@ -19,11 +15,11 @@ function part1() {
   return mostCalories
 }
 
-function part2() {
-  const calories = []
+function part2(): number {
+  const calories: number[] = []
 
   let currentElf = 0
-  readInput().map(line => {
+  readData(1).map(line => {
     if (!line.length) {
       calories.push(currentElf)
       currentElf = 0

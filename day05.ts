@@ -1,17 +1,14 @@
-import { readFileSync } from 'node:fs'
+import {readData, Tuple} from './utils'
 
-function readInput() {
-  return readFileSync('./day05.data', {encoding: 'utf8'}).split('\n').filter(r => r)
+interface Move {
+  num: number
+  from: number
+  to: number
 }
 
-/**
- *
- * @param {string[]} lines
- * @return {[number[][], {num: number, from: number, to: number}[]]}
- */
-function splitInput(lines) {
-  const stacks = [[],[],[],[],[],[],[],[],[]]
-  const moves = []
+function splitInput(lines: string[]): Tuple<string[][], Move[]> {
+  const stacks: string[][] = [[], [], [], [], [], [], [], [], []]
+  const moves: Move[] = []
 
   let row = 0
 
@@ -29,9 +26,9 @@ function splitInput(lines) {
   }
 
   // Loop over the rest of the lines, parsing the moves
-  for (; row < lines.length; row++) {
+  for (row++; row < lines.length; row++) {
     // If the line matches the format 'move [num] from [from] to [to]' we get a match and values
-    const [match, num, from, to] = /move (\d+) from (\d+) to (\d+)/.exec(lines[row])
+    const [match, num, from, to] = Array.from(/move (\d+) from (\d+) to (\d+)/.exec(lines[row]) ?? [])
     if (match) {
       moves.push({num: Number(num), from: Number(from), to: Number(to)})
     }
@@ -40,24 +37,24 @@ function splitInput(lines) {
   return [stacks, moves]
 }
 
-function part1() {
-  const [stacks, moves] = splitInput(readInput())
+function part1(): string {
+  const [stacks, moves] = splitInput(readData(5))
   moves.forEach(({num, from, to}) => {
     for (let i = 0; i < num; i++) {
       // Move the top box from the from-stack to the to-stack
-      stacks[to - 1].push(stacks[from - 1].pop())
+      stacks[to - 1].push(stacks[from - 1].pop() as string)
     }
   })
   return stacks.map(stack => stack.pop()).join('')
 }
 
-function part2() {
-  const [stacks, moves] = splitInput(readInput())
+function part2(): string {
+  const [stacks, moves] = splitInput(readData(5))
   moves.forEach(({num, from, to}) => {
     // Move num boxes from the top of the from-stack to the to-stack
     stacks[to - 1].push(...stacks[from - 1].splice(stacks[from - 1].length - num, num))
   })
-  return stacks.map(stack => stack.pop()).join('')
+  return stacks.map(stack => stack.pop() as string).join('')
 }
 
 console.log(`part1: ${part1()}`)

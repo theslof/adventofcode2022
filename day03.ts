@@ -1,21 +1,17 @@
-import { readFileSync } from 'node:fs'
+import {readData} from './utils'
 
-function readInput() {
-  return readFileSync('./day03.data', {encoding: 'utf8'}).split('\n')
-}
-
-function isUpperCase(input) {
+function isUpperCase(input: string): boolean {
   return input === input.toUpperCase()
 }
 
-function getPriority(letter) {
+function getPriority(letter: string): number {
   return isUpperCase(letter)
     ? letter.charCodeAt(0) - 'A'.charCodeAt(0) + 27
     : letter.charCodeAt(0) - 'a'.charCodeAt(0) + 1
 }
 
-function part1() {
-  return readInput()
+function part1(): number {
+  return readData(3)
     .map(line => {
       const first = line.slice(0, line.length / 2)
       const second = line.slice(line.length / 2)
@@ -28,8 +24,8 @@ function part1() {
     .reduce((sum, value) => sum + value)
 }
 
-function part2() {
-  const data = readInput()
+function part2(): number {
+  const data = readData(3)
   let result = 0
   for (let i = 0; (i + 2) < data.length; i += 3) {
     result += Array.from(new Set(data[i]))

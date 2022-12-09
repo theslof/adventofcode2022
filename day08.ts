@@ -1,23 +1,12 @@
-import { readFileSync, writeFileSync } from 'node:fs'
-import bmpjs from 'bmp-js'
+import {readData, renderArrayToBMP} from './utils'
 
-/**
- * @return {number[][]}
- */
-function readInput() {
-  return readFileSync('./day08.data', {encoding: 'utf8'})
-    .split('\n')
-    .filter(l => l)
-    .map(line => line.split('').map(Number))
-}
-
-const data = readInput()
+const data = readData(8).map(line => line.split('').map(Number))
 const HEIGHT = data.length
 const WIDTH = data[0].length
 const visibleData = calculateTreesVisibleFromEdges()
 const scenicScoreData = calculateScenicScores()
 
-function calculateTreesVisibleFromEdges() {
+function calculateTreesVisibleFromEdges(): number[] {
   /*
      - We have a problem: We must count the visible trees.
      - A tree is a cell in a matrix represented by an arbitrarily large rectangular array of digits (0-9)
@@ -87,7 +76,7 @@ function calculateTreesVisibleFromEdges() {
   return visibleTrees
 }
 
-function calculateScenicScores() {
+function calculateScenicScores(): number[] {
   const scenicScores = new Array(WIDTH * HEIGHT)
 
   for (let row = 0; row < HEIGHT; row++) {
@@ -125,16 +114,16 @@ function calculateScenicScores() {
   return scenicScores
 }
 
-function part1() {
+function part1(): number {
   //Finally we count the number of visible trees:
   return visibleData.reduce((sum, visible) => sum + visible, 0)
 }
 
-function part2() {
+function part2(): number {
   return Math.max(...scenicScoreData)
 }
 
-console.log(`part1: ${part1(data)}`)
+console.log(`part1: ${part1()}`)
 console.log(`part2: ${part2()}`)
 
 renderImages()
@@ -146,26 +135,19 @@ function renderImages() {
 }
 
 function renderVisibleToBMP() {
-  const buffer = new ArrayBuffer(WIDTH * HEIGHT * 4)
-  const imageData = new Uint8Array(buffer)
+  const imageData = new Uint8Array(WIDTH * HEIGHT * 4)
   visibleData.forEach((visible, index) => {
     imageData[index * 4] = 255
     imageData[index * 4 + 1] = visible * 255
     imageData[index * 4 + 2] = visible * 255
     imageData[index * 4 + 3] = visible * 255
   })
-  const image = bmpjs.encode({
-    data: imageData,
-    width: WIDTH,
-    height: HEIGHT,
-  })
-  writeFileSync('./day08_visible.bmp', image.data)
+  renderArrayToBMP(imageData, WIDTH, HEIGHT, 'day08_visible')
 }
 
 function renderScenicScoreToBMP() {
   const maxScenicScore = part2()
-  const buffer = new ArrayBuffer(WIDTH * HEIGHT * 4)
-  const imageData = new Uint8Array(buffer)
+  const imageData = new Uint8Array(WIDTH * HEIGHT * 4)
   scenicScoreData.forEach((score, index) => {
     const logScore = Math.log10(score / maxScenicScore * 10)
     imageData[index * 4] = 255
@@ -174,17 +156,11 @@ function renderScenicScoreToBMP() {
     imageData[index * 4 + 3] = logScore * 255 // Red
   })
 
-  const image = bmpjs.encode({
-    data: imageData,
-    width: WIDTH,
-    height: HEIGHT,
-  })
-  writeFileSync('./day08_scenic.bmp', image.data)
+  renderArrayToBMP(imageData, WIDTH, HEIGHT, 'day08_scenic')
 }
 
 function renderHeightToBMP() {
-  const buffer = new ArrayBuffer(WIDTH * HEIGHT * 4)
-  const imageData = new Uint8Array(buffer)
+  const imageData = new Uint8Array(WIDTH * HEIGHT * 4)
   data.forEach((row, y) => row.forEach((height, x) => {
     const pos = y * WIDTH * 4 + x * 4
     imageData[pos] = 255
@@ -192,10 +168,5 @@ function renderHeightToBMP() {
     imageData[pos + 2] = height / 9 * 255 // Green
     imageData[pos + 3] = 0 // Red
   }))
-  const image = bmpjs.encode({
-    data: imageData,
-    width: WIDTH,
-    height: HEIGHT,
-  })
-  writeFileSync('./day08_height.bmp', image.data)
+  renderArrayToBMP(imageData, WIDTH, HEIGHT, 'day08_height')
 }
