@@ -7,7 +7,7 @@ export interface Position {
   y: number
 }
 
-export function readData(day: number, splitOn: string = '\n'): string[] {
+export function readData(day: number, splitOn: string | RegExp = '\n'): string[] {
   return readFileSync(`./day${day.toFixed().padStart(2, '0')}.data`, {encoding: 'utf8'}).split(splitOn)
 }
 
