@@ -2,60 +2,36 @@ import {readData} from './utils'
 
 type RecursiveArray<T> = (RecursiveArray<T> | T)[]
 
-function comparePair(left: RecursiveArray<number>, right: RecursiveArray<number>): number {
-  let i = 0
-  while (true) {
-    const leftEl = left[i]
-    const rightEl = right[i]
-    if (leftEl == null && rightEl == null) {
-      // Ran out of elements, no difference
-      return 0
-    } else if (leftEl == null) {
-      // Left side ran out of elements, right order
-      return -1
-    } else if (rightEl == null) {
-      // Right side ran out of elements, wrong order
-      return 1
-    }
-    if (typeof leftEl === 'number' && typeof rightEl === 'number') {
-      if (leftEl > rightEl) {
-        // Left side is greater, wrong order
-        return 1
-      }
-      if (rightEl > leftEl) {
-        // Right side is greater, right order
-        return -1
-      }
-    } else if (Array.isArray(leftEl) && Array.isArray(rightEl)) {
-      const result = comparePair(leftEl, rightEl)
-      if (result !== 0) return result
-    } else {
-      const result = comparePair(Array.isArray(leftEl) ? leftEl : [leftEl], Array.isArray(rightEl) ? rightEl : [rightEl])
-      if (result !== 0) return result
-    }
-    i++
+function comparePair(left: RecursiveArray<number> | number, right: RecursiveArray<number> | number): number {
+  // If both inputs are Numbers we only need to do a regular comparison
+  if (typeof left === 'number' && typeof right === 'number') return left - right
+
+  // Hack to convert number OR array to array, allows us to skip [number, Array] check and only do [Array, Array]
+  const l = [left].flat()
+  const r = [right].flat()
+
+  while (l.length && r.length) {
+    const result = comparePair(l.shift(), r.shift())
+    if (result !== 0) return result
   }
+  return l.length - r.length
 }
 
 function part1() {
   return readData(13, /\n\n/).map((pair) => {
     const [left, right] = pair.split('\n')
-    return comparePair(JSON.parse(left), JSON.parse(right)) === -1
+    return comparePair(JSON.parse(left), JSON.parse(right)) < 0
   }).reduce((sum, correct, index) => correct ? sum + index + 1 : sum, 0)
 }
 
 function part2() {
-  return [...readData(13, /\n/), '[[2]]', '[[6]]']
+  const dividers = [[[2]], [[6]]]
+  return readData(13, /\n/)
     .filter(l => l)
-    .map((line) => JSON.parse(line))
+    .map(line => JSON.parse(line))
+    .concat(dividers)
     .sort(comparePair)
-    .reduce((product, value, index) => {
-      if (
-        JSON.stringify(value) === '[[2]]' ||
-        JSON.stringify(value) === '[[6]]'
-      ) return product * (index + 1)
-      return product
-    }, 1)
+    .reduce((product, value, index) => dividers.includes(value) ? product * (index + 1) : product, 1)
 }
 
 console.log('Part 1:', part1())
